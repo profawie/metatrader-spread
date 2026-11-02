@@ -1,0 +1,138 @@
+<!--
+////////////////////////////////////////////////
+ Example Realtime Price feed from MT5 Price API 
+////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Realtime MT5 Price Feed</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    </head>
+    <body>
+    <a href="docs.html" target="_blank">Technical Documentation</a>
+        <pre id="debug"></pre>
+        <div id="response"></div>
+        <script>
+        function numberFormat(val, decimalPlaces) {
+            var multiplier = Math.pow(10, decimalPlaces);
+            return (Math.round(val * multiplier) / multiplier).toFixed(decimalPlaces);
+        }
+        </script>
+        <script>
+            ////////////////////////////
+            // Start - CONFIGURATION
+            ////////////////////////////
+            var accountCode = "SS";
+            var apiUrl = "https://api.example.com/mt5price-api-ss/start/"+accountCode;
+            var wssUrl = "wss://api.example.com/mt5price-api-ss/stomp";
+            var digitDecimals = 4;
+            
+            //var apiUrl = "http://localhost:8080/start/"+accountCode;
+            //var wssUrl = "ws://localhost:8080/stomp";
+            ////////////////////////////
+            // End - CONFIGURATION
+            ////////////////////////////
+
+
+            var stompClient = null;
+            var cacheMap = {};
+            function display(cacheMap) {
+                $("#response").html('');
+                var table = $("<table border=1 style='width: 100%'>");
+                var index = 0;
+                table.append($("<tr>")
+                .append("<th>#</th>")
+                .append("<th>Symbol</th>")
+                .append("<th>Name</th>")
+                .append("<th>Bid</th>")
+                .append("<th>Ask</th>")
+                .append("<th>Volume</th>")
+                .append("<th>Volume ext</th>")
+                .append("<th>DateTime</th>")
+                .append("<th>DateTime S</th>")
+                .append("<th>DateTime MSC</th>")
+                );
+                $.each(cacheMap, function(i, d) {
+                    index++;                    
+                    var id = d.symbol;
+                    id = id.replace('.', '_');
+                    table.append($("<tr>")
+                    .append("<td>"+index+"</td>")
+                    .append("<td id='"+id+"'>"+d.symbol+"</td>")
+                    .append("<td id='"+id+"'>"+d.name+"</td>")
+                    .append("<td id='"+id+"_bid'>" + numberFormat(d.bid, digitDecimals) + "</td>")
+                    .append("<td id='"+id+"_ask'>" + numberFormat(d.ask, digitDecimals) + "</td>")
+                    .append("<td id='"+id+"_volume'>"+d.volume+"</td>")
+                    .append("<td id='"+id+"_volume_ext'>"+d.volume_ext+"</td>")
+                    .append("<td id='"+id+"_datetime'>"+d.datetime+"</td>")
+                    .append("<td id='"+id+"_datetime_s'>"+d.datetime_s+"</td>")
+                    .append("<td id='"+id+"_datetime_msc'>"+d.datetime_msc+"</td>")
+                    );
+
+                });                
+                $("#response").append(table);
+            }
+
+            $(function() {
+
+                //initialization - load cache price
+                fetch(apiUrl, {
+                    method: "GET"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    $.each(data, function(i, d) {
+                        var id = d.symbol;
+                        id = id.replace('.', '_');
+                        cacheMap[id] = d;
+                    });
+                    display(cacheMap);
+
+                });
+
+                //Connect to STOMP
+                stompClient = Stomp.client(wssUrl);
+                stompClient.debug = 0;
+                stompClient.connect({}, function(frame) {
+                    console.log('Connected ['+accountCode+']: ' + frame);
+                    stompClient.subscribe('/topic/mt5price/'+accountCode, function(price) {
+                        var data = JSON.parse(price.body);
+
+                        $('#debug').html(JSON.stringify(data, null, '\t'));
+                        if(data.symbol == null) {
+                            return;
+                        }
+                        var id = data.symbol;
+                        id = id.replace('.', '_');
+                        if(cacheMap[id] == null) {
+                            
+                            cacheMap[id] = data;
+                            display(cacheMap);
+                        }
+                        
+                        $('td').css('color', 'black').css('font-weight', 'normal');                        
+                        $("#"+id).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_ask").html(numberFormat(data.ask, digitDecimals)).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_bid").html(numberFormat(data.bid, digitDecimals)).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_datetime").html(data.datetime).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_datetime_msc").html(data.datetime_msc).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_datetime_s").html(data.datetime_s).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_volume").html(data.volume).css('color', 'blue').css('font-weight', 'bold');
+                        $("#"+id+"_volume_ext").html(data.volume_ext).css('color', 'blue').css('font-weight', 'bold');
+                        
+                    });
+                });
+
+                //Disconnect from STOMP when leave from browser
+                $(window).on('beforeunload', function(){
+                    if (stompClient != null) {
+                        stompClient.disconnect();
+                        console.log('Disconnect');
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

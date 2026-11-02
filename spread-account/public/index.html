@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<!--
+      https://wpspread.s3.eu-west-2.amazonaws.com/
+    -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;1,500&display=swap" rel="stylesheet">
+
+    <link
+      href="https://use.fontawesome.com/releases/v5.15.1/css/all.css"
+      rel="stylesheet"
+    />
+    <link
+      href="mdb.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="index.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://www.example.com/wp-content/themes/astra/assets/css/minified/frontend.min.css?ver=3.7.3"
+      rel="stylesheet"
+    /> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+    ////////////////////////////
+    // CONFIGURATION
+    ////////////////////////////
+    var accountCode = "DEMO";
+    var wssUrl = "wss://api.example.com/mt5price-api-demo/stomp";
+    var PRO = [
+    "EURUSD",
+    "GBPUSD",
+    "XAUUSD",
+    "XAGUSD",
+    "USOUSD",
+    "UKOUSD",
+    "GBPJPY",
+    "USDCAD",
+    "GBPAUD",
+    "EURJPY",
+    "GBPCHF",
+    "NZDUSD",
+    "AUDUSD",
+    "USDCHF",
+    "EURAUD",
+    "USDJPY",
+    "GBPCAD",
+    "GBPNZD"
+  ];
+
+  var ECN = [
+    "EURUSD.ecn",
+    "GBPUSD.ecn",
+    "XAUUSD.ecn",
+    "XAGUSD.ecn",
+    "USOUSD.ecn",
+    "UKOUSD.ecn",
+    "GBPJPY.ecn",
+    "USDCAD.ecn",
+    "GBPAUD.ecn",
+    "EURJPY.ecn",
+    "GBPCHF.ecn",
+    "NZDUSD.ecn",
+    "AUDUSD.ecn",
+    "USDCHF.ecn",
+    "EURAUD.ecn",
+    "USDJPY.ecn",
+    "GBPCAD.ecn",
+    "GBPNZD.ecn"
+  ];
+
+  var STANDARD = [
+    "EURUSD.",
+    "GBPUSD.",
+    "XAUUSD.",
+    "XAGUSD.",
+    "USOUSD.",
+    "UKOUSD.",
+    "GBPJPY.",
+    "USDCAD.",
+    "GBPAUD.",
+    "EURJPY.",
+    "GBPCHF.",
+    "NZDUSD.",
+    "AUDUSD.",
+    "USDCHF.",
+    "EURAUD.",
+    "USDJPY.",
+    "GBPCAD.",
+    "GBPNZD."
+  ];
+
+  var MICRO = [
+    "EURUSD_",
+    "GBPUSD_",
+    "XAUUSD_",
+    "XAGUSD_",
+    "USOUSD_",
+    "UKOUSD_",
+    "GBPJPY_",
+    "USDCAD_",
+    "GBPAUD_",
+    "EURJPY_",
+    "GBPCHF_",
+    "NZDUSD_",
+    "AUDUSD_",
+    "USDCHF_",
+    "EURAUD_",
+    "USDJPY_",
+    "GBPCAD_",
+    "GBPNZD_"
+  ];
+  const symbolMap = new Map();
+    
+    ////////////////////////////
+    // FORMAT CURRENCY
+    ////////////////////////////
+    function round(value, decimals) {
+      var digits = Math.pow(10, decimals);
+        return addZeroes(Math.round(value * digits) / digits, decimals);
+    }
+    function addZeroes(num, decimals) {
+      const snum = ''+num;	
+      const dec = snum.split('.')[1];
+      const len = dec && dec.length > decimals ? dec.length : decimals;
+      return Number(snum).toFixed(len);
+    }
+
+    const calcPro = (d) => {
+      const spread = Math.pow(10, d.digits - 1);
+      const a = (parseFloat(d.ask) - parseFloat(d.bid)) * spread;
+      return round(a, 1);
+    };
+  
+    const calcStandard = (d) => {
+      const spread = Math.pow(10, d.digits - 1);
+      const a = (parseFloat(d.ask) - parseFloat(d.bid)) * spread;
+      return round(a, 1);
+    };
+  
+    const calcEcn = (d) => {
+      const spread = Math.pow(10, d.digits - 1);
+      const a = (parseFloat(d.ask) - parseFloat(d.bid)) * spread;
+      return round(a, 1);
+    };
+  
+    const calcMirco = (d) => {
+      const spread = Math.pow(10, d.digits - 1);
+      const a = (parseFloat(d.ask) - parseFloat(d.bid)) * spread;
+      return round(a,1);
+    }
+
+    ////////////////////////////
+    // STOMP CLIENT
+    ////////////////////////////
+    stompClient = Stomp.client(wssUrl);
+    stompClient.debug = 0;
+    stompClient.connect({}, function(frame) {
+        stompClient.subscribe('/topic/mt5price/'+accountCode, function(price) {
+            var data = JSON.parse(price.body);
+            var digitDecimals = data.digits;
+            if(data.symbol == null) {
+                return;
+            }
+            var id = data.symbol;
+            
+            var digits = data.digits;
+            var ask = round(data.ask, digits);
+            var bid = round(data.bid, digits);
+            
+            for(const dd of PRO) {
+              if(dd == data.symbol) {
+                price = symbolMap.get(id);
+                let arrowAsk = 'right';
+                let arrowBid = 'right';
+                if(price) {
+                  if(price.ask < ask) {
+                    arrowAsk = 'up';
+                  }else {
+                    arrowAsk = 'down';
+                  }
+                  if(price.bid < bid) {
+                    arrowBid = 'up';
+                  }else {
+                    arrowBid = 'down';
+                  }
+                }
+                $("#bid_"+id).html(bid).removeClass('up down').addClass(arrowBid).append("<i class='px-2 fas fa-angle-"+arrowBid+"'></i>");  
+                $("#ask_"+id).html(ask).removeClass('up down').addClass(arrowAsk).append("<i class='px-2 fas fa-angle-"+arrowAsk+"'></i>");  
+                $("#pro_"+id).html(calcPro(data));
+                continue;
+              }
+            }
+            for(const dd of STANDARD) {
+              if(dd == data.symbol) {
+                const dd = data.symbol;
+                const id2 = dd.substring(0, dd.length-1);
+                $("#standard_"+id2).html(calcStandard(data));
+                continue;
+              }
+            }
+            for(const dd of ECN) {
+              if(dd == data.symbol) {
+                const dd = data.symbol;
+                const id2 = dd.substring(0, dd.length-4);
+                $("#ecn_"+id2).html(calcEcn(data));
+                continue;
+              }
+            }
+            for(const dd of MICRO) {
+              if(dd == data.symbol) {
+                const dd = data.symbol;
+                const id2 = dd.substring(0, dd.length-1);
+                $("#micro_"+id2).html(calcMirco(data));
+                continue;
+              }
+            }
+            symbolMap.set(id, {ask: data.ask, bid: data.bid});
+        });
+    });
+
+    ////////////////////////////////////////////////
+    // Disconnect from STOMP when leave from browser
+    ////////////////////////////////////////////////
+    $(window).on('beforeunload', function(){
+        if (stompClient != null) {
+            stompClient.disconnect();
+            console.log('Disconnect');
+        }
+    });
+    </script>   
+    <title>Spread Realtime</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="spreadaccount"></div>
+  </body>
+</html>

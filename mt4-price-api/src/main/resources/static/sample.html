@@ -1,0 +1,161 @@
+<!--
+////////////////////////////////////////////////
+ Example Realtime Price feed from MT4 Price API 
+////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Realtime MT4 Price Feed</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    </head>
+    <body>
+    <a href="docs.html" target="_blank">Technical Documentation</a>
+        <pre id="debug"></pre>
+        <div id="response"></div>
+        <script>
+        function numberFormat(val, decimalPlaces) {
+            var multiplier = Math.pow(10, decimalPlaces);
+            return (Math.round(val * multiplier) / multiplier).toFixed(decimalPlaces);
+        }
+        </script>
+        <script>
+            ////////////////////////////
+            // Start - CONFIGURATION
+            ////////////////////////////
+            var accountCode = "SS";
+            var apiUrl = "https://api.example.com/mt4price-api-ss/start/"+accountCode;
+            var wssUrl = "wss://api.example.com/mt4price-api-ss/stomp";
+            var digitDecimals = 4;
+            var symbolFliters = [   //'USDCHF.X',
+                                    //'USDJPY.X',
+                                    //'AUDCAD.X',
+                                    'AUDCHF.X',
+                                    'AUDJPY.X',
+                                    'AUDNZD.X',
+                                    'CADCHF.X',
+                                    //'CADJPY.X',
+                                    'CHFJPY.X',
+                                    'EURAUD.X',
+                                    'EURCAD.X',
+                                    'EURCHF.X',
+                                    'EURGBP.X',
+                                    'EURJPY.X',
+                                    'EURNZD.X',
+                                    //'GBPAUD.X',
+                                    //'GBPCAD.X',
+                                    //'GBPCHF.X',
+                                    //'GBPJPY.X',
+                                    //'GBPNZD.X',
+                                    //'NZDCAD.X',
+                                    //'NZDCHF.X',
+                                    //'NZDJPY.X',
+                                    //'UKOUSD.X',
+                                    //'USOUSD.X',
+                                    'XAGUSD.X',
+                                    'XAUUSD.X' ];
+
+            //var apiUrl = "http://localhost:8080/start/"+accountCode;
+            //var wssUrl = "ws://localhost:8080/stomp";
+            ////////////////////////////
+            // End - CONFIGURATION
+            ////////////////////////////
+
+
+            var stompClient = null;
+            var cacheMap = {};
+            function display(cacheMap) {
+                $("#response").html('');
+                var table = $("<table style='width: 100%'>");
+                var index = 0;
+                table.append($("<tr>")
+                .append("<th>#</th>")
+                .append("<th>Symbol</th>")
+                .append("<th>Name</th>")
+                .append("<th>Bid</th>")
+                .append("<th>Ask</th>")
+                .append("<th>Spread</th>")
+                .append("<th>LastTime</th>")
+                .append("<th>DateTime</th>")
+                );
+                $.each(cacheMap, function(i, d) {
+                    index++;                    
+                    if(symbolFliters.indexOf(d.symbol) != -1) {
+                        var id = d.symbol;
+                        id = id.replace('.', '_');
+                        table.append($("<tr>")
+                        .append("<td>"+index+"</td>")
+                        .append("<td id='"+id+"'>"+d.symbol+"</td>")
+                        .append("<td id='"+id+"'>"+d.name+"</td>")
+                        .append("<td id='"+id+"_bid'>" + numberFormat(d.bid, digitDecimals) + "</td>")
+                        .append("<td id='"+id+"_ask'>" + numberFormat(d.ask, digitDecimals) + "</td>")
+                        .append("<td id='"+id+"_spread'>"+d.spread+"</td>")
+                        .append("<td id='"+id+"_lasttime'>"+d.lasttime+"</td>")
+                        .append("<td id='"+id+"_datetime'>"+d.datetime+"</td>"));
+                    }
+                });                
+                $("#response").append(table);
+            }
+
+            $(function() {
+
+                //initialization - load cache price
+                fetch(apiUrl, {
+                    method: "GET"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    $.each(data, function(i, d) {
+                        var id = d.symbol;
+                        id = id.replace('.', '_');
+                        cacheMap[id] = d;
+                    });
+                    display(cacheMap);
+
+                });
+
+                //Connect to STOMP
+                stompClient = Stomp.client(wssUrl);
+                stompClient.debug = 0;
+                stompClient.connect({}, function(frame) {
+                    console.log('Connected ['+accountCode+']: ' + frame);
+                    stompClient.subscribe('/topic/mt4price/'+accountCode, function(price) {
+                        var data = JSON.parse(price.body);
+
+                        //symbol fliter
+                        if(symbolFliters.indexOf(data.symbol) != -1) {                            
+                            $('#debug').html(JSON.stringify(data, null, '\t'));
+                            if(data.symbol == null) {
+                                return;
+                            }
+                            var id = data.symbol;
+                            id = id.replace('.', '_');
+                            if(cacheMap[id] == null) {
+                                
+                                cacheMap[id] = data;
+                                display(cacheMap);
+                            }
+                            
+                            $('td').css('color', 'black').css('font-weight', 'normal');                        
+                            $("#"+id).css('color', 'blue').css('font-weight', 'bold');
+                            $("#"+id+"_ask").html(numberFormat(data.ask, digitDecimals)).css('color', 'blue').css('font-weight', 'bold');
+                            $("#"+id+"_bid").html(numberFormat(data.bid, digitDecimals)).css('color', 'blue').css('font-weight', 'bold');
+                            $("#"+id+"_spread").html(data.spread).css('color', 'blue').css('font-weight', 'bold');
+                            $("#"+id+"_lasttime").html(data.lasttime).css('color', 'blue').css('font-weight', 'bold');
+                            $("#"+id+"_datetime").html(data.datetime).css('color', 'blue').css('font-weight', 'bold');
+                        }
+                    });
+                });
+
+                //Disconnect from STOMP when leave from browser
+                $(window).on('beforeunload', function(){
+                    if (stompClient != null) {
+                        stompClient.disconnect();
+                        console.log('Disconnect');
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

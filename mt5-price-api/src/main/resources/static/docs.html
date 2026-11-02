@@ -1,0 +1,100 @@
+<table class="table" cellspacing="0" cellpadding="5" border="1">
+<thead>
+<tr class="table">
+<th class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Field</span></p>
+</th>
+<th class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Type</span></p>
+</th>
+<th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Description</span></p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">datetime</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">INT64</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Date and time of the tick in seconds passed since 01.01.1970. This fields is not filled in by default (equal to 0) - the history server inserts the server's current trading time when receiving the data. If necessary, the gateway developer can set this date on their own. Using this feature implies 100% correctness of the transferred data time. Therefore, it should be used only when necessary.</span></p>
+<ul>
+<li class="p_fortable"><span class="f_fortable">datetime_msc has a higher priority than datetime. The server will use this value if it it specified.</span></li><li class="p_fortable"><span class="f_fortable">If datetime_msc is specified only, datetime value will be filled automatically on its basis (without milliseconds).</span></li><li class="p_fortable"><span class="f_fortable">If datetime is specified only, datetime_msc value will be filled automatically on its basis (with zero value for milliseconds).</span></li></ul>
+<p class="p_fortable"><span class="f_fortable">If you specify the time yourself, consider the time zone of the trade server (<a href="/en/docs/mt5/api/config_time/imtcontime/imtcontime_timezone" class="topiclink">IMTConTime::TimeZone</a>). For example, if the data feed passes the UNIX time (GMT 0), while the trading server works in GMT+2 time zone, the value should be increased by 60*60*2 (2 hours in seconds).</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">bid</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The Bid price.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">ask</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The Ask price.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">last</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The price of the last committed transaction.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">volume</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">UINT64</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Volume. The volume is recorded in the same form as it is passed by a data provider. A data provider may pass volumes as amounts of contracts (in lots) or as amounts of money. On the trading platform side, this value is interpreted depending on the type of calculation of profit and margin set for a symbol (<a href="/en/docs/mt5/api/config_symbol/imtconsymbol/imtconsymbol_calcmode" class="topiclink">IMTConSymbol::CalcMode</a>):</span></p>
+<ul>
+<li class="p_fortable"><span class="f_fortable">For the <a href="/en/docs/mt5/api/config_symbol/imtconsymbol/imtconsymbol_enum#encalcmode" class="topiclink">IMTConSymbol::TRADE_MODE_FOREX</a> type, the volumes are interpreted as amounts of money.</span></li><li class="p_fortable"><span class="f_fortable">For all the other type, the volumes are interpreted as amounts of contracts (lots).</span></li></ul>
+<p class="p_fortable"><span class="f_fortable">&nbsp;</span></p>
+<p class="p_fortable"><span class="f_fortable">For operations with <a href="/en/docs/mt5/api/features#volume" class="topiclink">extended volume accuracy</a>, use the 'volume_ext' field.</span></p>
+<ul>
+<li class="p_fortable"><span class="f_fortable">The 'volume_ext' value has a higher priority than 'volume'. The server will use this value if specified.</span></li><li class="p_fortable"><span class="f_fortable">If only the 'volume_ext' value is specified, the 'volume' field will be filled automatically based on the extended accuracy value (without milliseconds).</span></li><li class="p_fortable"><span class="f_fortable">If only 'volume' is specified, the 'volume_ext' field will be filled automatically on the bases of the standard accuracy value (with zero milliseconds).</span></li></ul>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">datetime_msc</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">INT64</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Date and time of the tick in milliseconds passed since 01.01.1970. This fields is not filled in by default (equal to 0) - the history server inserts the server's current trading time when receiving the data. If necessary, the gateway developer can set this date on their own. Using this feature implies 100% correctness of the transferred data time. Therefore, it should be used only when necessary.</span></p>
+<ul>
+<li class="p_fortable"><span class="f_fortable">datetime_msc has a higher priority than datetime. The server will use this value if it it specified.</span></li><li class="p_fortable"><span class="f_fortable">If datetime_msc is specified only, datetime value will be filled automatically on its basis (without milliseconds).</span></li><li class="p_fortable"><span class="f_fortable">If datetime is specified only, datetime_msc value will be filled automatically on its basis (with zero value for milliseconds).</span></li></ul>
+<p class="p_fortable"><span class="f_fortable">If you specify the time yourself, consider the time zone of the trade server (<a href="/en/docs/mt5/api/config_time/imtcontime/imtcontime_timezone" class="topiclink">IMTConTime::TimeZone</a>). For example, if the data feed passes the UNIX time (GMT 0), while the trading server works in GMT+2 time zone, the value should be increased by 60*60*1000*2 (2 hours in milliseconds).</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">flags</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">UINT64</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Tick flags passed using the <a href="/en/docs/mt5/api/mttickshort#entickshortflags" class="topiclink">EnTickShortFlags</a> enumeration. The flags reveal additional information about the tick and the data it has changed.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">volume_ext</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">UINT64</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Last deal volume with <a href="/en/docs/mt5/api/features#volume" class="topiclink">extended accuracy</a>. It is similar to the 'volume' field, but the value is passed with the fixed number of decimal places (8).</span></p>
+<ul>
+<li class="p_fortable"><span class="f_fortable">The 'volume_ext' value has a higher priority than 'volume'. The server will use this value if specified.</span></li><li class="p_fortable"><span class="f_fortable">If only the 'volume_ext' value is specified, the 'volume' field will be filled automatically based on the extended accuracy value (without milliseconds).</span></li><li class="p_fortable"><span class="f_fortable">If only 'volume' is specified, the 'volume_ext' field will be filled automatically on the bases of the standard accuracy value (with zero milliseconds).</span></li></ul>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:100px;"><p class="p_fortable"><span class="f_fortable">reserved</span></p>
+</td>
+<td class="table" style="width:81px;"><p class="p_fortable"><span class="f_fortable">UINT</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">A reserved field for future use.</span></p>
+</td>
+</tr>
+</tbody>
+</table>

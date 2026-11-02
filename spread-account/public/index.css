@@ -1,0 +1,125 @@
+body {
+  margin: 0;
+  font-family: Poppins, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.up {
+    color: green;
+}
+.down {
+    color: red;
+}
+.btn-outline-dark {
+    border: 1px solid #bdbdbd;
+}
+.spSelect {
+    font-weight: 900;
+    color:  #1266f1;
+}
+.spWRowName {
+    font-size: 25px;
+    font-weight: 900;
+}
+.spWRowVAsk {
+    font-weight: bold;
+    font-size: 20px;
+}
+.spWRowVBid {
+    font-weight: bold;
+    font-size: 20px;
+}
+.spWRowVPro {
+    font-weight: bold;
+    font-size: 20px;
+}
+.spWRowVStandard {
+    font-weight: bold;
+    font-size: 20px;
+}
+.spWRowVECN {
+    font-weight: bold;
+    font-size: 20px;
+}
+.spWRowVMicro {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.spArrow {
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.form-control {
+    border: 1px solid #bdbdbd !important;
+    background-color: white !important;
+}
+
+@media only screen and (max-device-width: 767px) {
+    .spWRowVAsk {
+        font-size: 18px;
+    }
+    .spWRowVBid {
+        font-size: 18px;
+    }
+    .spWRowVPro {
+        font-size: 18px;
+    }
+    .spWRowVStandard {
+        font-size: 18px;
+    }
+    .spWRowVECN {
+        font-size: 18px;
+    }
+    .spWRowVMicro {
+        font-size: 18px;
+    }
+}
+
+
+.accordion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.accordion__item {
+    padding: 17px 10px;
+    overflow: hidden;
+    cursor: pointer;
+}
+.accordion__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #d9d9d9;
+}
+.accordion__header h4 {
+    transition: 0.2s ease-in-out;
+    margin-bottom: 10px;
+}
+.accordion__header i {
+    transition: 0.2s ease-in-out;
+    transform-origin: center;
+    margin-bottom: 10px;
+}
+.accordion__content {
+    margin: 5px;
+    background: white;
+
+}
+.spRowDetailName {
+    font-size: 0.75rem;
+}
+.spRowDetailValue {
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.btnSelected {
+    background-color: #FFCD00;
+    color: black;
+    font-weight: bold;
+}

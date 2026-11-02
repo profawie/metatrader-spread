@@ -1,0 +1,139 @@
+<table class="table" cellspacing="0" cellpadding="5" border="1">
+<thead>
+<tr class="table">
+<th class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Name</span></p>
+</th>
+<th class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Type</span></p>
+</th>
+<th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Description</span></p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">symbol</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">char</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The name of a financial instrument. The name can only contain Latin letters without punctuation, spaces or special characters (may contain ".", "_", "&amp;" and "#"). The maximum length (including the end of line character) is 12 characters.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">digits</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The number of decimal places in the symbol quotes.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">count</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The position of a symbol. It is a parameter for internal use.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">visible</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">A non-zero value - the symbol is selected in Market Watch, 0 - not selected. To add a symbol to Market Watch, use <a href="/en/docs/mt4/api/manager_api/manager_api_symbol/cmanagerinterface_symboladd" class="topiclink">CManagerInterface::SymbolAdd</a>.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">type</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">The index of a group of symbols, to which this symbol belongs, in the <a href="/en/docs/mt4/api/reference_structures/structure_config/congroup" class="topiclink">ConGroup::secgroups</a> array.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">point</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Point value. It is calculated as 1/(10^digits). It is a service parameter.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px;"><p class="p_fortable"><span class="f_fortable">spread</span></p>
+</td>
+<td class="table" style="width:105px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table"><p class="p_fortable"><span class="f_fortable">Symbol spread. If you set a value other than "0" in this parameter, the spread will be considered fixed and will be calculated for the symbol using the spread_balance option: The 0 value means that the spread is floating.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">spread_balance</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">Spread balance. The value of the spread balance is defined as an offset from the equal division of the spread value (ConSymbol::spread) between the Bid and Ask prices. For example, if the spread is 10, its distribution in the ratio of -5 Bid/+ 5 Ask is equal to the spread balance value of 0. Ratio -6 Bid/+4 Ask corresponds to -1, ratio -4 Bid/+6 Ask corresponds to 1. If the spread value is odd, the 0 value of the spread value corresponds to its even distribution between the Bid and Ask prices with an offset of 1 in the Ask direction. For example, if the spread is 3, the zero spread balance corresponds to the ratio -1 Bid/+2 Ask.</span></p>
+<p class="p_fortable"><span class="f_fortable">&nbsp;</span></p>
+<p class="p_fortable"><span class="f_fortable">Three scenarios of price spreading are possible:</span></p>
+<p class="p_fortable"><span class="f_fortable">&nbsp;</span></p>
+<ul>
+<li class="p_fortable"><span class="f_fortable">If the spread of received quotes is equal to the spread set for the symbol, the difference between the prices is reduced by the formula: New Bid = Bid + Points * Spread Balance, where Points is the point value (ConSymbol::point). New Ask = New Bid + Spread.</span></li><li class="p_fortable"><span class="f_fortable">If the spread of received quotes differs from the spread set for the symbol, the difference between the prices is set by the formula: New Bid = (Ask + Bid)/2 - Points * (Spread/2 - Spread Balance), where Points is the point value (ConSymbol::point). New Ask = New Bid + Spread.</span></li><li class="p_fortable"><span class="f_fortable">If floating spread (0) is set for the symbol, prices are shifted by the same Spread Balance value.</span></li></ul>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">direction</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">Price change direction relative to its previous state. The field is outdated and is not used.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">updateflag</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">A flag indicating that the prices have changed. A nonzero value means changes, 0 - no changes.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">lasttime</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">__time32_t</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">The time when the last tick for the symbol was received. The date is specified in seconds since January 1, 1970.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">bid,ask</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">The last Bid and Ask prices.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">high,low</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">The last High and Low prices.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">commission</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">double</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">Commission amount. The units of commission depend on comm_type.</span></p>
+</td>
+</tr>
+<tr class="table">
+<td class="table" style="width:150px; height:16px;"><p class="p_fortable"><span class="f_fortable">comm_type</span></p>
+</td>
+<td class="table" style="width:105px; height:16px;"><p class="p_fortable"><span class="f_fortable">int</span></p>
+</td>
+<td class="table" style="height:16px;"><p class="p_fortable"><span class="f_fortable">The units, in which the commission amount is specified. It is a value from the enumeration <a href="/en/docs/mt4/api/reference_structures/structure_config/congroupsec#commission_type" class="topiclink">Commission units</a>.</span></p>
+</td>
+</tr>
+</tbody>
+</table>

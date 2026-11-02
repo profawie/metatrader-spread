@@ -1,0 +1,16 @@
+# Build output
+target/
+bin/
+obj/
+build/
+node_modules/
+packages/
+*.user
+.vs/
+
+# MetaQuotes binaries (proprietary, obtain from your broker / MetaQuotes)
+*.dll
+
+# Local secrets
+.env
+*.local.properties

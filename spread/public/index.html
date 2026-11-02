@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--
+      https://wpspread.s3.eu-west-2.amazonaws.com/
+    -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;1,500&display=swap" rel="stylesheet">
+
+    <link
+      href="https://use.fontawesome.com/releases/v5.15.1/css/all.css"
+      rel="stylesheet"
+    />
+    <link
+      href="mdb.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="index.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://www.example.com/wp-content/themes/astra/assets/css/minified/frontend.min.css?ver=3.7.3"
+      rel="stylesheet"
+    /> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+    ////////////////////////////
+    // CONFIGURATION
+    ////////////////////////////
+    var accountCode = "SS";
+    var wssUrl = "wss://api.example.com/mt5price-api-ss/stomp";
+    var cacheMap = {};
+    
+    ////////////////////////////
+    // FORMAT CURRENCY
+    ////////////////////////////
+    function round(value, decimals) {
+      var digits = Math.pow(10, decimals);
+        return addZeroes(Math.round(value * digits) / digits, decimals);
+    }
+    function addZeroes(num, decimals) {
+      const snum = ''+num;	
+      const dec = snum.split('.')[1];
+      const len = dec && dec.length > decimals ? dec.length : decimals;
+      return Number(snum).toFixed(len);
+    }
+    window.localStorage.setItem('page', 'forex');
+
+    ////////////////////////////
+    // STOMP CLIENT
+    ////////////////////////////
+    stompClient = Stomp.client(wssUrl);
+    stompClient.debug = 0;
+    stompClient.connect({}, function(frame) {
+        stompClient.subscribe('/topic/mt5price/'+accountCode, function(price) {
+            var data = JSON.parse(price.body);
+            var digitDecimals = data.digits;
+            if(data.symbol == null) {
+                return;
+            }
+            var id = data.symbol;
+            id = id.replace('.', '_');
+            if(cacheMap[id] == null) {
+                cacheMap[id] = data;
+            }
+            var _digits = data.digits;
+            var _spread = round(Math.abs(data.bid - data.ask) * Math.pow(10, _digits), 0);
+            var _ask = round(data.ask, _digits);
+            var _bid = round(data.bid, _digits);
+            
+            $("#"+id+"M_ask").html(round(_ask, digitDecimals));
+            $("#"+id+"M_bid").html(round(_bid, digitDecimals));
+            $("#"+id+"M_spread").html(round(_spread, 0));
+
+            $("#"+id+"W_ask").html(round(_ask, digitDecimals));
+            $("#"+id+"W_bid").html(round(_bid, digitDecimals));
+            $("#"+id+"W_spread").html(round(_spread, 0));
+            
+        });
+    });
+
+    ////////////////////////////////////////////////
+    // Disconnect from STOMP when leave from browser
+    ////////////////////////////////////////////////
+    $(window).on('beforeunload', function(){
+        if (stompClient != null) {
+            stompClient.disconnect();
+            console.log('Disconnect');
+        }
+    });
+    </script>   
+    <title>Spread Realtime</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="spread"></div>
+  </body>
+</html>
